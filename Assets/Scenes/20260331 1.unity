@@ -913,7 +913,7 @@ MonoBehaviour:
   useOpenAiAssistant: 1
   initialQuestion: "\uB2F9\uC2E0\uC740 \uBB34\uC5C7\uC744 \uC704\uD574 \uC774\uACF3\uC5D0
     \uC624\uC168\uB098\uC694?"
-  openAiApiKey:
+  openAiProxyUrl: http://127.0.0.1:8787/openai/responses
   openAiModel: gpt-4o-mini
   openAiMaxOutputTokens: 220
   openAiInstructions: 'You are a mythic guide inside a whale''s belly. You speak

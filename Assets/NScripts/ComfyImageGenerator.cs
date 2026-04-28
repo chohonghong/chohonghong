@@ -44,7 +44,7 @@ public class ComfyImageGenerator : MonoBehaviour
     [SerializeField] private bool useOpenAiAssistant = true;
     [TextArea(2, 4)]
     [SerializeField] private string initialQuestion = "?????μ냼???ㅺ쾶 ?섏뿀?섏슂?";
-    [SerializeField] private string openAiApiKey;
+    [SerializeField] private string openAiProxyUrl = "http://127.0.0.1:8787/openai/responses";
     [SerializeField] private string openAiModel = "gpt-4o-mini";
     [SerializeField] private int openAiMaxOutputTokens = 220;
     [TextArea(12, 30)]
@@ -222,15 +222,15 @@ public class ComfyImageGenerator : MonoBehaviour
             return;
         }
 
-        if (useQuestionFlow && useOpenAiAssistant && HasOpenAiKey())
+        if (useQuestionFlow && useOpenAiAssistant && HasOpenAiEndpoint())
         {
             HandleConversationAdvanceWithAi();
             return;
         }
 
-        if (useQuestionFlow && useOpenAiAssistant && !HasOpenAiKey())
+        if (useQuestionFlow && useOpenAiAssistant && !HasOpenAiEndpoint())
         {
-            SetStatus("OpenAI API key is missing. Using fallback questions.");
+            SetStatus("OpenAI proxy URL is missing. Using fallback questions.");
         }
 
         if (useQuestionFlow)
@@ -598,18 +598,14 @@ public class ComfyImageGenerator : MonoBehaviour
         return builder.ToString();
     }
 
-    private string GetOpenAiApiKey()
+    private string GetOpenAiEndpointUrl()
     {
-        if (!string.IsNullOrWhiteSpace(openAiApiKey))
-            return openAiApiKey.Trim();
-
-        string envKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-        return string.IsNullOrWhiteSpace(envKey) ? "" : envKey.Trim();
+        return string.IsNullOrWhiteSpace(openAiProxyUrl) ? "" : openAiProxyUrl.Trim();
     }
 
-    private bool HasOpenAiKey()
+    private bool HasOpenAiEndpoint()
     {
-        return !string.IsNullOrWhiteSpace(GetOpenAiApiKey());
+        return !string.IsNullOrWhiteSpace(GetOpenAiEndpointUrl());
     }
 
     private JObject BuildOpenAiRequestBody(string stage, string userInstruction, string context)
@@ -2281,22 +2277,21 @@ public class ComfyImageGenerator : MonoBehaviour
 
     private IEnumerator RequestAiStructuredTurn(string stage, string userInstruction, string context, Action<AiAssistantResult> onSuccess, Action<string> onFailure)
     {
-        string apiKey = GetOpenAiApiKey();
-        if (string.IsNullOrWhiteSpace(apiKey))
+        string endpointUrl = GetOpenAiEndpointUrl();
+        if (string.IsNullOrWhiteSpace(endpointUrl))
         {
-            onFailure?.Invoke("OpenAI API key is missing.");
+            onFailure?.Invoke("OpenAI proxy URL is missing.");
             yield break;
         }
 
         JObject body = BuildOpenAiRequestBody(stage, userInstruction, context);
         byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(body.ToString(Newtonsoft.Json.Formatting.None));
 
-        using (UnityWebRequest request = new UnityWebRequest("https://api.openai.com/v1/responses", "POST"))
+        using (UnityWebRequest request = new UnityWebRequest(endpointUrl, "POST"))
         {
             request.uploadHandler = new UploadHandlerRaw(jsonBytes);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
-            request.SetRequestHeader("Authorization", "Bearer " + apiKey);
             request.timeout = 60;
 
             yield return request.SendWebRequest();

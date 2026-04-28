@@ -1,0 +1,63 @@
+{
+  "1": {
+    "inputs": {
+      "image": "input1.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image A"
+    }
+  },
+  "2": {
+    "inputs": {
+      "image": "input2.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image B"
+    }
+  },
+  "3": {
+    "inputs": {
+      "blend_factor": 0.5,
+      "blend_mode": "normal",
+      "image1": [
+        "1",
+        0
+      ],
+      "image2": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "ImageBlend",
+    "_meta": {
+      "title": "Image Blend"
+    }
+  },
+  "4": {
+    "inputs": {
+      "images": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "5": {
+    "inputs": {
+      "filename_prefix": "blend",
+      "images": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  }
+}
